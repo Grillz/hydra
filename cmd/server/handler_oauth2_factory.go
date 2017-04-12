@@ -155,6 +155,8 @@ func newOAuth2Handler(c *config.Config, router *httprouter.Router, km jwk.Manage
 		H:                   &herodot.JSON{},
 		AccessTokenLifespan: c.GetAccessTokenLifespan(),
 		CookieStore:         sessions.NewCookieStore(c.GetCookieSecret()),
+		Issuer:              c.Issuer,
+		BaseURL:             c.ClusterURL,
 	}
 
 	handler.SetRoutes(router)

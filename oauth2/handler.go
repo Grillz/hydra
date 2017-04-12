@@ -1,30 +1,32 @@
 package oauth2
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 
 	"encoding/json"
+	"strings"
+	"time"
+
 	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/ory-am/fosite"
 	"github.com/ory-am/hydra/herodot"
 	"github.com/ory-am/hydra/pkg"
 	"github.com/pkg/errors"
-	"strings"
-	"time"
 	"golang.org/x/net/context"
-	"github.com/ory-am/common/path"
 )
 
 const (
 	OpenIDConnectKeyName = "hydra.openid.id-token"
 
 	ConsentPath = "/oauth2/consent"
-	TokenPath = "/oauth2/token"
-	AuthPath = "/oauth2/auth"
+	TokenPath   = "/oauth2/token"
+	AuthPath    = "/oauth2/auth"
 
 	WellKnownPath = "/.well-known/openid-configuration"
+	JWKPath       = "/.well-known/jwks.json"
 
 	// IntrospectPath points to the OAuth2 introspection endpoint.
 	IntrospectPath = "/oauth2/introspect"
@@ -34,18 +36,18 @@ const (
 )
 
 type Handler struct {
-	OAuth2              fosite.OAuth2Provider
-	Consent             ConsentStrategy
+	OAuth2  fosite.OAuth2Provider
+	Consent ConsentStrategy
 
-	H                   herodot.Herodot
+	H herodot.Herodot
 
-	ForcedHTTP          bool
-	ConsentURL          url.URL
+	ForcedHTTP bool
+	ConsentURL url.URL
 
 	AccessTokenLifespan time.Duration
 	CookieStore         sessions.Store
 
-	Issuer string
+	Issuer  string
 	BaseURL string
 }
 
@@ -56,18 +58,19 @@ func (h *Handler) SetRoutes(r *httprouter.Router) {
 	r.GET(ConsentPath, h.DefaultConsentHandler)
 	r.POST(IntrospectPath, h.IntrospectHandler)
 	r.POST(RevocationPath, h.RevocationHandler)
-	r.POST(WellKnownPath, h.WellKnownHandler)
+	r.GET(WellKnownPath, h.WellKnownHandler)
 }
 
 func (h *Handler) WellKnownHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	fmt.Printf("handler: %+v", h)
 	h.H.Write(context.Background(), w, r, map[string]interface{}{
-		"issuer": h.Issuer,
-		"authorization_endpoint": AuthPath,
-		"token_endpoint": TokenPath,
-		"subject_types_supported": []string{"pairwise", "public"},
-		"jwks_uri": "to be done" + OpenIDConnectKeyName,
+		"issuer":                                h.Issuer,
+		"authorization_endpoint":                h.BaseURL + AuthPath,
+		"token_endpoint":                        h.BaseURL + TokenPath,
+		"subject_types_supported":               []string{"pairwise", "public"},
+		"jwks_uri":                              h.BaseURL + JWKPath,
 		"id_token_signing_alg_values_supported": []string{"RS256"},
-		"response_types_supported": []string{"code", "code id_token", "id_token", "token id_token", "token"},
+		"response_types_supported":              []string{"code", "code id_token", "id_token", "token id_token", "token"},
 	})
 }
 
@@ -209,7 +212,7 @@ func (h *Handler) redirectToConsent(w http.ResponseWriter, r *http.Request, auth
 	// Error can be ignored because a session will always be returned
 	cookie, _ := h.CookieStore.Get(r, consentCookieName)
 
-	challenge, err := h.Consent.IssueChallenge(authorizeRequest, schema + "://" + r.Host + r.URL.String(), cookie)
+	challenge, err := h.Consent.IssueChallenge(authorizeRequest, schema+"://"+r.Host+r.URL.String(), cookie)
 	if err != nil {
 		return err
 	}
