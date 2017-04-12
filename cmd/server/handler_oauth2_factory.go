@@ -142,6 +142,7 @@ func newOAuth2Handler(c *config.Config, router *httprouter.Router, km jwk.Manage
 	consentURL, err := url.Parse(c.ConsentURL)
 	pkg.Must(err, "Could not parse consent url %s.", c.ConsentURL)
 
+	fmt.Printf("config: %+v", c)
 	handler := &oauth2.Handler{
 		ForcedHTTP: c.ForceHTTP,
 		OAuth2:     o,
@@ -155,6 +156,8 @@ func newOAuth2Handler(c *config.Config, router *httprouter.Router, km jwk.Manage
 		H:                   &herodot.JSON{},
 		AccessTokenLifespan: c.GetAccessTokenLifespan(),
 		CookieStore:         sessions.NewCookieStore(c.GetCookieSecret()),
+		Issuer:              c.ClusterURL,
+		BaseURL:             c.ClusterURL,
 	}
 
 	handler.SetRoutes(router)

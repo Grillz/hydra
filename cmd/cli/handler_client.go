@@ -67,6 +67,8 @@ func (h *ClientHandler) CreateClient(cmd *cobra.Command, args []string) {
 	id, _ := cmd.Flags().GetString("id")
 	public, _ := cmd.Flags().GetBool("is-public")
 
+	logrus.Printf("callbacks: %+v", callbacks)
+
 	if secret == "" {
 		var secretb []byte
 		secretb, err = pkg.GenerateSecret(26)
@@ -86,6 +88,7 @@ func (h *ClientHandler) CreateClient(cmd *cobra.Command, args []string) {
 		Name:          name,
 		Public:        public,
 	}
+	logrus.Printf("client: %+v", *cc)
 	err = h.M.CreateClient(cc)
 	if h.M.Dry {
 		fmt.Printf("%s\n", err)

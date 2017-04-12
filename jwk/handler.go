@@ -13,6 +13,12 @@ import (
 	"golang.org/x/net/context"
 )
 
+const (
+	OpenIDConnectKeyName    = "hydra.openid.id-token"
+	ConsentChallengeKeyName = "hydra.consent.challenge"
+	ConsentResponseKeyName  = "hydra.consent.response"
+)
+
 type Handler struct {
 	Manager    Manager
 	Generators map[string]KeyGenerator
@@ -34,6 +40,7 @@ func (h *Handler) GetGenerators() map[string]KeyGenerator {
 }
 
 func (h *Handler) SetRoutes(r *httprouter.Router) {
+	r.GET("/.well-known/jwks.json", h.WellKnown)
 	r.POST("/keys/:set", h.Create)
 	r.PUT("/keys/:set", h.UpdateKeySet)
 	r.GET("/keys/:set", h.GetKeySet)
@@ -52,6 +59,33 @@ type createRequest struct {
 
 type joseWebKeySetRequest struct {
 	Keys []json.RawMessage `json:"keys"`
+}
+
+func (h *Handler) WellKnown(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var ctx = context.Background()
+	setNames := []string{OpenIDConnectKeyName, ConsentChallengeKeyName, ConsentResponseKeyName}
+	keyArr := make([]jose.JsonWebKey, 3)
+
+	for _, set := range setNames {
+		if _, err := h.W.TokenAllowed(ctx, h.W.TokenFromRequest(r), &firewall.TokenAccessRequest{
+			Resource: "rn:hydra:keys:" + set + ":" + "public",
+			Action:   "get",
+		}, "hydra.keys.get"); err != nil {
+			h.H.WriteError(ctx, w, r, err)
+			return
+		}
+		key, err := h.Manager.GetKey(set, "public")
+		if err != nil {
+			h.H.WriteError(ctx, w, r, err)
+			return
+		}
+		keyArr = append(keyArr, key.Keys[0])
+	}
+	keySet := jose.JsonWebKeySet{
+		Keys: keyArr,
+	}
+
+	h.H.Write(ctx, w, r, keySet)
 }
 
 func (h *Handler) DeleteKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
