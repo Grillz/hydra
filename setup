@@ -1,0 +1,4 @@
+#!/bin/sh
+hydra policies create -f docs/access-control/policies/allow-client-consent-key
+hydra policies create -f docs/access-control/policies/everyone-can-read-public-keys.json
+hydra clients create -n “hydra-demo” -c http://localhost:5556/auth/callback -g authorization_code,authorize_code,client_credentials -r code,token,id_token -a offline,openid,profile,email,hydra,core --id useful-app --secret useful-app

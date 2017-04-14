@@ -62,25 +62,37 @@ type joseWebKeySetRequest struct {
 }
 
 func (h *Handler) WellKnown(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	fmt.Println("in well known")
 	var ctx = context.Background()
-	setNames := []string{OpenIDConnectKeyName, ConsentChallengeKeyName, ConsentResponseKeyName}
+	setNames := []string{ConsentChallengeKeyName, OpenIDConnectKeyName, ConsentResponseKeyName}
 	keyArr := make([]jose.JsonWebKey, 3)
+	fmt.Printf("request: %+v \n", r)
 
-	for _, set := range setNames {
-		if _, err := h.W.TokenAllowed(ctx, h.W.TokenFromRequest(r), &firewall.TokenAccessRequest{
+	fmt.Println("authing well known")
+
+	for i, set := range setNames {
+		if err := h.W.IsAllowed(ctx, &firewall.AccessRequest{
+			Subject:  "",
+			Resource: "rn:hydra:keys:" + set + ":" + "public",
+			Action:   "get",
+		}); err == nil {
+			// Allow unauthorized requests to access this resource if it is enabled by policies
+		} else if _, err := h.W.TokenAllowed(ctx, h.W.TokenFromRequest(r), &firewall.TokenAccessRequest{
 			Resource: "rn:hydra:keys:" + set + ":" + "public",
 			Action:   "get",
 		}, "hydra.keys.get"); err != nil {
 			h.H.WriteError(ctx, w, r, err)
 			return
 		}
-		key, err := h.Manager.GetKey(set, "public")
+
+		keys, err := h.Manager.GetKey(set, "public")
 		if err != nil {
 			h.H.WriteError(ctx, w, r, err)
 			return
 		}
-		keyArr = append(keyArr, key.Keys[0])
+		keyArr[i] = keys.Keys[0]
 	}
+	fmt.Println("returning: ", keyArr)
 	keySet := jose.JsonWebKeySet{
 		Keys: keyArr,
 	}
@@ -231,33 +243,41 @@ func (h *Handler) GetKey(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	var ctx = context.Background()
 	var setName = ps.ByName("set")
 	var keyName = ps.ByName("key")
+	fmt.Printf("****request: %+v \n", r)
 
 	if err := h.W.IsAllowed(ctx, &firewall.AccessRequest{
 		Subject:  "",
 		Resource: "rn:hydra:keys:" + setName + ":" + keyName,
 		Action:   "get",
 	}); err == nil {
+		fmt.Println("***** isAllowed err is nil")
 		// Allow unauthorized requests to access this resource if it is enabled by policies
 	} else if _, err := h.W.TokenAllowed(ctx, h.W.TokenFromRequest(r), &firewall.TokenAccessRequest{
 		Resource: "rn:hydra:keys:" + setName + ":" + keyName,
 		Action:   "get",
 	}, "hydra.keys.get"); err != nil {
+		fmt.Println("***** else if err is not nil: ", err.Error())
 		h.H.WriteError(ctx, w, r, err)
 		return
 	}
 
+	fmt.Println("***** getting key: ", setName, keyName)
 	keys, err := h.Manager.GetKey(setName, keyName)
 	if err != nil {
+		fmt.Println("***** problem getting key: ", setName, keyName)
 		h.H.WriteError(ctx, w, r, err)
 		return
 	}
 
+	fmt.Println("***** got key: ", setName, keyName)
+	fmt.Printf("keys: %+v \n", keys)
 	h.H.Write(ctx, w, r, keys)
 }
 
 func (h *Handler) GetKeySet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var ctx = context.Background()
 	var setName = ps.ByName("set")
+	fmt.Printf("request: %+v \n", r)
 
 	keys, err := h.Manager.GetKeySet(setName)
 	if err != nil {
