@@ -1,7 +1,6 @@
 package oauth2
 
 import (
-	"fmt"
 	"net/http"
 	"net/url"
 
@@ -62,7 +61,6 @@ func (h *Handler) SetRoutes(r *httprouter.Router) {
 }
 
 func (h *Handler) WellKnownHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	fmt.Printf("handler: %+v", h)
 	h.H.Write(context.Background(), w, r, map[string]interface{}{
 		"issuer":                                h.Issuer,
 		"authorization_endpoint":                h.BaseURL + AuthPath,
