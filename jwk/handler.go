@@ -62,13 +62,10 @@ type joseWebKeySetRequest struct {
 }
 
 func (h *Handler) WellKnown(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	fmt.Println("in well known")
+
 	var ctx = context.Background()
 	setNames := []string{ConsentChallengeKeyName, OpenIDConnectKeyName, ConsentResponseKeyName}
 	keyArr := make([]jose.JsonWebKey, 3)
-	fmt.Printf("request: %+v \n", r)
-
-	fmt.Println("authing well known")
 
 	for i, set := range setNames {
 		if err := h.W.IsAllowed(ctx, &firewall.AccessRequest{
@@ -92,7 +89,6 @@ func (h *Handler) WellKnown(w http.ResponseWriter, r *http.Request, ps httproute
 		}
 		keyArr[i] = keys.Keys[0]
 	}
-	fmt.Println("returning: ", keyArr)
 	keySet := jose.JsonWebKeySet{
 		Keys: keyArr,
 	}

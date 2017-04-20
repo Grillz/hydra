@@ -50,7 +50,7 @@ has Hydra is not supporting OpenID Connect Discovery yet.
 You can manage *OAuth 2.0 clients* using the cli or the HTTP REST API.
 
 * **CLI:** `hydra clients -h`
-* **REST:** Read the [API Docs](http://docs.hdyra.apiary.io/#reference/oauth2-clients)
+* **REST:** Read the [API Docs](http://docs.hydra13.apiary.io/#reference/oauth2-clients)
 
 ## Consent App Flow
 
@@ -129,7 +129,7 @@ the following claims:
 The challenge claims are:
 * **jti:** A unique id.
 * **scp:** The requested scopes, e.g. `["blog.readall", "blog.writeall"]`
-* **aud:** The client id that initiated the request. You can fetch client data using the [OAuth2 Client API](http://docs.hdyra.apiary.io/#reference/oauth2/manage-the-oauth2-client-collection).
+* **aud:** The client id that initiated the request. You can fetch client data using the [OAuth2 Client API](http://docs.hydra13.apiary.io/#reference/oauth2/manage-the-oauth2-client-collection).
 * **exp:** The challenge's expiry date. Consent endpoints must not accept challenges that have expired.
 * **redir:** Where the consent endpoint should redirect the user agent to, once consent is given.
 
@@ -173,7 +173,6 @@ that contains the following claims:
     "hydra"
   ],
   "sub": "john.doe@me.com",
-  "uname": "John Doe",
   "iat": 1464511515,
   "id_ext": { "foo": "bar" },
   "at_ext": { "baz": true }
@@ -185,10 +184,9 @@ The consent claims are:
 * **scp:** The scopes the user opted in to *grant* access to, e.g. `["blog.readall"]`.
 * **sub:** Include the subject's unique id here.
 * **aud:** The client id that initiated the OAuth2 request. You can fetch
-client data using the [OAuth2 Client API](http://docs.hdyra.apiary.io/#reference/oauth2/manage-the-oauth2-client-collection).
+client data using the [OAuth2 Client API](http://docs.hydra13.apiary.io/#reference/oauth2/manage-the-oauth2-client-collection).
 * **exp:** The expiry date of this token. Use very short lifespans (< 10 min).
 * **iat:** The tokens issuance time.
-* **uname:** You can set an arbitrary, non-unique username which will be echoed in the token introspection. *(optional)*
 * **id_ext:** If set, pass this extra data to the id token. This data is not available at OAuth2 Token Introspection
  nor at the warden endpoints. *(optional)*
 * **at_ext:** If set, pass this extra data to the access token session. You can retrieve the data
@@ -220,4 +218,4 @@ the authorization context of the token from the authorization server
 to the protected resource.
 
 The Token Introspection endpoint is documented in the
-[API Docs](http://docs.hdyra.apiary.io/#reference/oauth2/oauth2-token-introspection).
+[API Docs](http://docs.hydra13.apiary.io/#reference/oauth2/oauth2-token-introspection).
