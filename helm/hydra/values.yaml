@@ -1,0 +1,35 @@
+
+LOG_LEVEL: "debug"
+SYSTEM_SECRET: ""
+CONSENT_URL: https://idp.dev.datapipe.io/consent
+DATABASE_URL: ""
+# DATABASE_URL: "postgres://hydra:secret@postgresd:5432/hydra?sslmode=disable"
+#     Uncomment the following line to use mysql instead.
+#     DATABASE_URL: "mysql://root:secret@tcp(mysqld:3306)/mysql?parseTime=true"
+ROOT_USER: admin
+ROOT_PASSWORD: demo-password
+ACCESS_TOKEN_LIFESPAN: "24h"
+ID_TOKEN_LIFESPAN: "72h"
+AUTHORIZE_CODE_LIFESPAN: "10m"
+ISSUER: https://hydra.dev.datapipe.io
+  
+awsElbSslCert: "arn:aws:acm:us-west-2:293135079892:certificate/056efa05-0745-469f-9aa4-510525710001"
+hostname: hydra.dev.datapipe.io
+replicaCount: 1
+image:
+  repository: 293135079892.dkr.ecr.us-west-2.amazonaws.com
+  image: hydra
+  tag: spike
+  pullPolicy: Always
+service:
+  name: hydra
+  type: LoadBalancer
+  externalPort: 443
+  internalPort: 4444
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi

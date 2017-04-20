@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/Sirupsen/logrus"
@@ -14,6 +15,8 @@ func main() {
 	} else if os.Getenv("PROFILING") == "memory" {
 		defer profile.Start(profile.MemProfile).Stop()
 	}
+	fmt.Println("issuer: ", os.Getenv("ISSUER"))
+	fmt.Println("root client: ", os.Getenv("FORCE_ROOT_CLIENT_CREDENTIALS"))
 
 	switch os.Getenv("LOG_LEVEL") {
 	case "debug":

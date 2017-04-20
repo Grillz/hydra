@@ -1,0 +1,42 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "fullname" . }}
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}/{{ .Values.image.image }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: ["/go/bin/hydra", "host"]
+        args: ["--dangerous-force-http"]
+        ports:
+        - containerPort: {{ .Values.service.internalPort }}
+        env:
+          - name: LOG_LEVEL
+            value: {{ .Values.LOG_LEVEL }}
+          - name: SYSTEM_SECRET
+            value: {{ .Values.SYSTEM_SECRET }}
+          - name: CONSENT_URL
+            value: {{ .Values.CONSENT_URL }}     
+          - name: DATABASE_URL
+            value: {{ .Values.DATABASE_URL }}         
+          - name: FORCE_ROOT_CLIENT_CREDENTIALS
+            value: {{ .Values.ROOT_USER }}:{{ .Values.ROOT_PASSWORD }}  
+          - name: ACCESS_TOKEN_LIFESPAN
+            value: {{ .Values.ACCESS_TOKEN_LIFESPAN }}
+          - name: ID_TOKEN_LIFESPAN
+            value: {{ .Values.ID_TOKEN_LIFESPAN }}
+          - name: AUTHORIZE_CODE_LIFESPAN
+            value: {{ .Values.AUTHORIZE_CODE_LIFESPAN }}
+          - name: ISSUER
+            value: {{ .Values.ISSUER }}
+        resources:
+{{ toYaml .Values.resources | indent 12 }}

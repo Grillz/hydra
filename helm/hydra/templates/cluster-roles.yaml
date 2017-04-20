@@ -1,0 +1,42 @@
+kind: Role
+{{- if .Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1beta1" }}
+apiVersion: rbac.authorization.k8s.io/v1beta1
+{{- else }}
+apiVersion: rbac.authorization.k8s.io/v1alpha1
+{{- end }}
+metadata:
+  name: hydra
+  namespace: {{ .Release.Namespace }}
+rules:
+- apiGroups:
+  - "*"
+  # - batch
+  # - apps
+  # - rbac.authorization.k8s.io
+  resources: ["*"]
+  # - pods
+  # - jobs
+  # - endpoints
+  # - serviceaccounts
+  # - services
+  # - namespaces
+  # verbs: ["get", "list", "watch"]
+  verbs: ["*"]
+---
+kind: RoleBinding
+{{- if .Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1beta1" }}
+apiVersion: rbac.authorization.k8s.io/v1beta1
+{{- else }}
+apiVersion: rbac.authorization.k8s.io/v1alpha1
+{{- end }}
+metadata:
+  name: hydra
+  namespace: {{ .Release.Namespace }}
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: hydra
+  apiGroup: rbac.authorization.k8s.io
