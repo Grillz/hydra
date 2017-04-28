@@ -67,9 +67,37 @@ condition that was configured for the field `remoteIP`.
 ## Access Control Decisions: The Warden
 
 The warden is a HTTP API allowing you to perform these access requests.
-The warden knows two endpoints:
+The warden knows two authorization endpoints:
 
 * `/warden/allowed`: Check if a subject is allowed to do something.
 * `/warden/token/allowed`: Check if the subject of a token is allowed to do something.
 
 Both endpoints use policies to compute the result and are documented in the [HTTP API Documentation](http://docs.hydra13.apiary.io/#reference/warden:-access-control).
+
+### Groups
+
+Warden supports group membership. 
+
+Groups are simple objects:
+```
+{
+  "id": "rn:groups:admins",
+  "members": ["users:peter", "users:ken"]
+}
+```
+
+Groups can be added and searched with:
+```
+* `/warden/groups`
+```
+Groups can be changed by id:
+```
+* `/warden/groups/:id`
+```
+Members of groups can be changed with:
+```
+* `/warden/groups/:id/members`
+```
+
+Groups are checked with the authorization endpoint requests. If the subject of a token is the member of a group, that membership will be allotted as a subject at policy examination.
+
